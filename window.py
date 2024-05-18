@@ -52,11 +52,17 @@ class Window(QtWidgets.QMainWindow):
         # Tools actions
         self.action_tools=QtWidgets.QActionGroup(self)
         self.action_tools_line=QtWidgets.QAction(QtGui.QIcon('Icons/tool_line.png'),"Line",self)
+        self.action_tools_line.setShortcut("Ctrl+L")
         self.action_tools_rect=QtWidgets.QAction(QtGui.QIcon('Icons/tool_rectangle.png'),"Rectangle",self)
+        self.action_tools_rect.setShortcut("Ctrl+R")
         self.action_tools_ellipse=QtWidgets.QAction(QtGui.QIcon('Icons/tool_ellipse.png'),"Ellipse",self)
+        self.action_tools_ellipse.setShortcut("Ctrl+E")
         self.action_tools_polygone=QtWidgets.QAction(QtGui.QIcon('Icons/tool_polygon.png'),"Polygone",self)
+        self.action_tools_polygone.setShortcut("Ctrl+P")
         self.action_tools_text=QtWidgets.QAction(QtGui.QIcon('Icons/tool_text.png'),"Text",self)
+        self.action_tools_text.setShortcut("Ctrl+T")
         self.action_tools_eraser=QtWidgets.QAction(QtGui.QIcon('Icons/tool_eraser.png'),"Eraser",self)
+        self.action_tools_eraser.setShortcut("Ctrl+D")
         self.action_tools_line.setCheckable(True)
         self.action_tools_line.setChecked(True)
         self.action_tools_rect.setCheckable(True)
@@ -96,6 +102,10 @@ class Window(QtWidgets.QMainWindow):
         self.action_style_brush_Bdiag = QtWidgets.QAction(QtGui.QIcon('Icons/tools_brush_BDiag.png'),"BDiag", self)
         self.action_style_brush_Fdiag = QtWidgets.QAction(QtGui.QIcon('Icons/tools_brush_FDiag.png'),"FDiag", self)
         self.action_style_brush_diagcross = QtWidgets.QAction(QtGui.QIcon('Icons/tools_brush_cross.png'),"DiagCross", self)
+        #Help actions
+        self.action_aboutus=QtWidgets.QAction(QtGui.QIcon('Icons/help_aboutus.png'),"About Us",self)
+        self.action_aboutapp=QtWidgets.QAction(QtGui.QIcon('Icons/help_aboutapp.png'),"About the application",self)
+        self.action_shortcuts=QtWidgets.QAction(QtGui.QIcon('Icons/help_shortcuts.png'),"Shortcuts",self)
         # Help actions    
     def connect_actions(self) :
         self.action_file_open.triggered.connect(self.file_open)
@@ -135,6 +145,9 @@ class Window(QtWidgets.QMainWindow):
         self.action_style_brush_Bdiag.triggered.connect(self.style_brush_BDiag_selection)
         self.action_style_brush_Fdiag.triggered.connect(self.style_brush_FDiag_selection)
         self.action_style_brush_diagcross.triggered.connect(self.style_brush_diagcross_selection)
+        self.action_aboutus.triggered.connect(self.help_aboutus)
+        self.action_aboutapp.triggered.connect(self.help_aboutapp)
+        self.action_shortcuts.triggered.connect(self.help_shortcuts)
 
     # File actions implementation
     def file_open(self):
@@ -233,18 +246,41 @@ class Window(QtWidgets.QMainWindow):
         self.view.set_pen_style(QtCore.Qt.DashDotDotLine)
  
     # Help actions implementation
-    def help_about_us(self) :
-        pass
+    def help_aboutus(self):
+        QtWidgets.QMessageBox.information(self, "About Us",
+                          "This application was created by Omar ABDEL KADER and Wiam HAMMACH using PyQt5 at ENIB in May 2024.")
+
+    def help_aboutapp(self):
+        QtWidgets.QMessageBox.information(self, "About the Application",
+                          "-------------------------------------------------\n"
+                          "This is a simple paint application created with PyQt5.\n"
+                          "-------------------------------------------------\n"
+                          "Omar & Wiam | All Rights Reserved \u00A9")
+
+    def help_shortcuts(self):
+        QtWidgets.QMessageBox.information(self, "Shortcuts",
+                                "-->Shortcuts<--\n\n"
+                                "Ctrl+O: Open file\n"
+                                "Ctrl+S: Save file\n"
+                                "Ctrl+Z: Undo\n"
+                                "Ctrl+Y: Redo\n"
+                                "Ctrl+C: Copy\n"
+                                "Ctrl+V: Paste\n"
+                                "Ctrl+X: Cut")
 
     # Menubar actions
     def create_menus(self) :
         menubar = self.menuBar()
+        menubar.setStyleSheet("background-color: #DCDCDC;")
         menu_file = menubar.addMenu('&File')
         menu_file.addAction(self.action_file_open)
         menu_file_saveAs=menu_file.addMenu('&Save As')
         menu_file_saveAs.setIcon(self.action_save_as.icon())
         menu_file_saveAs.addAction(self.action_save_image)
         menu_file_saveAs.addAction(self.action_save_json)
+        menu_edit = menubar.addMenu('&Edit')
+        menu_edit.addAction(self.action_edit_undo)
+        menu_edit.addAction(self.action_edit_redo)
         menu_tool = menubar.addMenu('&Tools')
         menu_tool.addAction(self.action_tools_line)
         menu_tool.addAction(self.action_tools_rect)
@@ -252,10 +288,6 @@ class Window(QtWidgets.QMainWindow):
         menu_tool.addAction(self.action_tools_polygone)
         menu_tool.addAction(self.action_tools_text)
         menu_tool.addAction(self.action_tools_eraser)
-        menu_edit = menubar.addMenu('&Edit')
-        menu_edit.addAction(self.action_edit_undo)
-        menu_edit.addAction(self.action_edit_redo)
-
         menu_style= menubar.addMenu('&Style')
         menu_style_pen= menu_style.addMenu('&Pen')
         menu_style_pen.setIcon(self.action_style_pen.icon())
@@ -278,6 +310,10 @@ class Window(QtWidgets.QMainWindow):
         menu_style_brush_style.addAction(self.action_style_brush_Bdiag)
         menu_style_brush_style.addAction(self.action_style_brush_Fdiag)
         menu_style_brush_style.addAction(self.action_style_brush_diagcross)
+        menuhelp=menubar.addMenu('&Help')
+        menuhelp.addAction(self.action_aboutus)
+        menuhelp.addAction(self.action_aboutapp)
+        menuhelp.addAction(self.action_shortcuts)
 
 
         
