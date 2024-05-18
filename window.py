@@ -75,6 +75,9 @@ class Window(QtWidgets.QMainWindow):
         self.action_tools.addAction(self.action_tools_polygone)
         self.action_tools.addAction(self.action_tools_text)
         self.action_tools.addAction(self.action_tools_eraser)
+        # Edit actions
+        self.action_edit_undo=QtWidgets.QAction(QtGui.QIcon('Icons/edit_undo.png'),"Undo",self)
+        self.action_edit_redo=QtWidgets.QAction(QtGui.QIcon('Icons/edit_redo.png'),"Redo",self)
         # Style actions    
         self.action_style_pen=QtWidgets.QAction(QtGui.QIcon('Icons/tool_pen.png'),"Pen",self)
         self.action_style_brush=QtWidgets.QAction(QtGui.QIcon('Icons/tool_brush.png'),"Brush",self)
@@ -116,6 +119,8 @@ class Window(QtWidgets.QMainWindow):
         )
         self.action_save_image.triggered.connect(self.file_save_image)
         self.action_save_json.triggered.connect(self.file_save_json)
+        self.action_edit_undo.triggered.connect(self.edit_undo)
+        self.action_edit_redo.triggered.connect(self.edit_redo)
         self.action_style_pen_color.triggered.connect(self.style_pen_color_selection)
         self.action_style_pen_thickness.triggered.connect(self.style_pen_thickness_selection)
         self.action_style_pen_solid.triggered.connect(self.style_pen_solid_selection)
@@ -164,6 +169,15 @@ class Window(QtWidgets.QMainWindow):
         print("checked : ",checked)
         print("tool : ",tool)
         self.view.set_tool(tool)
+
+    # Edit actions implementation
+    def edit_undo(self):
+        print("Undo triggered")
+        self.view.undo()
+
+    def edit_redo(self):
+        print("Redo triggered")
+        self.view.redo()
 
     # Style actions implementation
     def style_pen_color_selection(self):
@@ -238,6 +252,9 @@ class Window(QtWidgets.QMainWindow):
         menu_tool.addAction(self.action_tools_polygone)
         menu_tool.addAction(self.action_tools_text)
         menu_tool.addAction(self.action_tools_eraser)
+        menu_edit = menubar.addMenu('&Edit')
+        menu_edit.addAction(self.action_edit_undo)
+        menu_edit.addAction(self.action_edit_redo)
 
         menu_style= menubar.addMenu('&Style')
         menu_style_pen= menu_style.addMenu('&Pen')

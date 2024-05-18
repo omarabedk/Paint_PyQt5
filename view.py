@@ -15,6 +15,8 @@ class View (QtWidgets.QGraphicsView) :
         self.item=None
         self.pen,self.brush=None,None
         self.create_style()
+        self.undo_stack = []
+        self.redo_stack = []
 
     def __repr__(self):
         return "<View({},{},{})>".format(self.pen,self.brush,self.tool)
@@ -59,6 +61,34 @@ class View (QtWidgets.QGraphicsView) :
     def set_brush_style(self,style):
         print("View.set_brush_style(self,style)",style)
         self.brush.setStyle(style)
+
+    def add_item(self, item):
+        self.scene().addItem(item)
+        self.undo_stack.append(("add", item))
+
+    def remove_item(self, item):
+        self.scene().removeItem(item)
+        self.undo_stack.append(("remove", item))
+
+    def undo(self):
+        if self.undo_stack:
+            action_type, item = self.undo_stack.pop()
+            if action_type == "add":
+                self.scene().removeItem(item)
+                self.redo_stack.append(("add", item))
+            elif action_type == "remove":
+                self.scene().addItem(item)
+                self.redo_stack.append(("remove", item))
+    
+    def redo(self):
+        if self.redo_stack:
+            action_type, item = self.redo_stack.pop()
+            if action_type == "add":
+                self.scene().addItem(item)
+                self.undo_stack.append(("add", item))
+            elif action_type == "remove":
+                self.scene().removeItem(item)
+                self.undo_stack.append(("remove", item))
     
 
     # Events
@@ -91,7 +121,7 @@ class View (QtWidgets.QGraphicsView) :
             elif self.tool=="line" :
                 line=QtWidgets.QGraphicsLineItem(self.begin.x(), self.begin.y(), self.end.x(), self.end.y())
                 line.setPen(self.pen)
-                self.scene().addItem(line)
+                self.add_item(line)
             elif self.tool=="rectangle" :
                 rect = QtWidgets.QGraphicsRectItem(
                     min(self.begin.x(), self.end.x()),     # Top-left x-coordinate
@@ -101,7 +131,7 @@ class View (QtWidgets.QGraphicsView) :
                 )
                 rect.setPen(self.pen)
                 rect.setBrush(self.brush)
-                self.scene().addItem(rect)
+                self.add_item(rect)
             elif self.tool == "ellipse":
                 ellipse = QtWidgets.QGraphicsEllipseItem(
                     min(self.begin.x(), self.end.x()),     # Top-left x-coordinate
@@ -111,7 +141,7 @@ class View (QtWidgets.QGraphicsView) :
                 )
                 ellipse.setPen(self.pen)
                 ellipse.setBrush(self.brush)
-                self.scene().addItem(ellipse)
+                self.add_item(ellipse)
             elif self.tool == "polygon":
                 # Define points for polygon (a triangle in this case)
                 points = [
@@ -122,15 +152,14 @@ class View (QtWidgets.QGraphicsView) :
                 polygon = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(points))
                 polygon.setPen(self.pen)
                 polygon.setBrush(self.brush)
-                self.scene().addItem(polygon)
+                self.add_item(polygon)
             elif self.tool == "text":
                 text, ok = QtWidgets.QInputDialog.getText(self, "Text Input", "Enter your text:")
                 if ok:
                     text_item = QtWidgets.QGraphicsTextItem(text)
                     text_item.setPos(self.begin)
                     text_item.setDefaultTextColor(QtGui.QColor(self.pen.color()))
-                    self.scene().addItem(text_item)
-                    self.scene().addItem(text_item)
+                    self.add_item(text)
             elif self.tool == "eraser":
                 eraser_rect = QtCore.QRectF(self.end.x() - 5, self.end.y() - 5, 10, 10)
                 items = self.scene().items(eraser_rect)  # Find items intersecting with the eraser cursor
