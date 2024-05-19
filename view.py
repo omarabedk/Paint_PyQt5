@@ -73,12 +73,13 @@ class View (QtWidgets.QGraphicsView) :
     def undo(self):
         if self.undo_stack:
             action_type, item = self.undo_stack.pop()
-            if action_type == "add":
-                self.scene().removeItem(item)
-                self.redo_stack.append(("add", item))
-            elif action_type == "remove":
-                self.scene().addItem(item)
-                self.redo_stack.append(("remove", item))
+            if self.scene().items():
+                if action_type == "add":
+                    self.scene().removeItem(item)
+                    self.redo_stack.append(("add", item))
+                elif action_type == "remove":
+                    self.scene().addItem(item)
+                    self.redo_stack.append(("remove", item))
     
     def redo(self):
         if self.redo_stack:
