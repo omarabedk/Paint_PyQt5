@@ -45,6 +45,7 @@ class Window(QtWidgets.QMainWindow):
 
     def create_actions(self) :
         # File actions
+        self.action_file_new=QtWidgets.QAction(QtGui.QIcon('Icons/new.png'),"New File",self)
         self.action_file_open=QtWidgets.QAction(QtGui.QIcon('Icons/open.png'),"Open",self)
         self.action_file_open.setShortcut("Ctrl+O")
         self.action_file_open.setStatusTip("Open file")
@@ -130,6 +131,7 @@ class Window(QtWidgets.QMainWindow):
         self.action_tools_eraser.triggered.connect(
             lambda checked,tool="eraser": self.tools_selection(checked,tool)
         )
+        self.action_file_new.triggered.connect(self.file_new)
         self.action_save_image.triggered.connect(self.file_save_image)
         self.action_save_json.triggered.connect(self.file_save_json)
         self.action_edit_undo.triggered.connect(self.edit_undo)
@@ -151,6 +153,16 @@ class Window(QtWidgets.QMainWindow):
         self.action_aboutus.triggered.connect(self.help_aboutus)
         self.action_aboutapp.triggered.connect(self.help_aboutapp)
         self.action_shortcuts.triggered.connect(self.help_shortcuts)
+
+    def file_new(self):
+        reply = QtWidgets.QMessageBox.question(self, 'Confirmation', 'Do you want to save the your current drawing?',
+                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.file_save_json()
+            self.scene.clear()
+        else:
+            self.scene.clear()
 
     # File actions implementation
     def file_open(self):
@@ -195,14 +207,12 @@ class Window(QtWidgets.QMainWindow):
         pen.setStyle(item_data.get("Pen Style", QtCore.Qt.SolidLine))
         item.setPen(pen)
 
-    # Helper method to set brush properties
     def set_brush_properties(self, item, item_data):
         brush = QtGui.QBrush()
         brush.setColor(QtGui.QColor(item_data.get("Brush Color", "white")))
         brush.setStyle(item_data.get("Brush Style", QtCore.Qt.SolidPattern))
         item.setBrush(brush)
 
-    # Helper method to set text color
     def set_text_color(self, item, item_data):
         text_color = QtGui.QColor(item_data.get("Text Color", "black"))
         item.setDefaultTextColor(text_color)
@@ -400,6 +410,7 @@ class Window(QtWidgets.QMainWindow):
         menubar = self.menuBar()
         menubar.setStyleSheet("background-color: #DCDCDC;font-size: 19px;")
         menu_file = menubar.addMenu('&File')
+        menu_file.addAction(self.action_file_new)
         menu_file.addAction(self.action_file_open)
         menu_file_saveAs=menu_file.addMenu('&Save As')
         menu_file_saveAs.setIcon(self.action_save_as.icon())
