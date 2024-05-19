@@ -2,6 +2,7 @@
 import os,sys
 from PyQt5 import QtCore,QtGui,QtWidgets
 from PyQt5.QtGui import QIcon
+import json
 
 #from scene import Scene
 from view import View
@@ -49,7 +50,9 @@ class Window(QtWidgets.QMainWindow):
         self.action_file_open.setStatusTip("Open file")
         self.action_save_as=QtWidgets.QAction(QtGui.QIcon('Icons/save_as.png'),"Save As",self)
         self.action_save_image=QtWidgets.QAction(QtGui.QIcon('Icons/save_png.png'),"Save Image",self)
+        self.action_save_image.setShortcut("Ctrl+I")
         self.action_save_json=QtWidgets.QAction(QtGui.QIcon('Icons/save_json.png'),"Save JSON",self)
+        self.action_save_json.setShortcut("Ctrl+S")
         # Tools actions
         self.action_tools=QtWidgets.QActionGroup(self)
         self.action_tools_line=QtWidgets.QAction(QtGui.QIcon('Icons/tool_line.png'),"Line",self)
@@ -151,9 +154,59 @@ class Window(QtWidgets.QMainWindow):
 
     # File actions implementation
     def file_open(self):
-        filename = QtWidgets.QFileDialog.getOpenFileName(self,"Open File", os.getcwd())
-        fileopen=QtCore.QFile(filename[0])
-        print("open",fileopen)
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open JSON", os.getcwd(), "JSON Files (*.json)")
+
+        if file_path:
+            with open(file_path, 'r') as json_file:
+                data = json.load(json_file)
+
+            for item_data in data:
+                item_type = item_data.get("type")
+                if item_type == "Rectangle":
+                    rect_item = QtWidgets.QGraphicsRectItem(item_data["x"], item_data["y"], item_data["width"], item_data["height"])
+                    self.scene.addItem(rect_item)
+                    self.set_pen_properties(rect_item, item_data)
+                    self.set_brush_properties(rect_item, item_data)
+                elif item_type == "Line":
+                    line_item = QtWidgets.QGraphicsLineItem(item_data["x1"], item_data["y1"], item_data["x2"], item_data["y2"])
+                    self.scene.addItem(line_item)
+                    self.set_pen_properties(line_item, item_data)
+                elif item_type == "Ellipse":
+                    ellipse_item = QtWidgets.QGraphicsEllipseItem(item_data["x"], item_data["y"], item_data["width"], item_data["height"])
+                    self.scene.addItem(ellipse_item)
+                    self.set_pen_properties(ellipse_item, item_data)
+                    self.set_brush_properties(ellipse_item, item_data)
+                elif item_type == "Polygon":
+                    points = [QtCore.QPointF(point["x"], point["y"]) for point in item_data["points"]]
+                    polygon_item = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(points))
+                    self.scene.addItem(polygon_item)
+                    self.set_pen_properties(polygon_item, item_data)
+                    self.set_brush_properties(polygon_item, item_data)
+                elif item_type == "Text":
+                    text_item = QtWidgets.QGraphicsTextItem(item_data["text"])
+                    text_item.setPos(item_data["x"], item_data["y"])
+                    self.scene.addItem(text_item)
+                    self.set_text_color(text_item, item_data)
+
+    def set_pen_properties(self, item, item_data):
+        pen = QtGui.QPen()
+        pen.setColor(QtGui.QColor(item_data.get("Pen Color", "black")))
+        pen.setWidth(item_data.get("Pen Thickness", 1))
+        pen.setStyle(item_data.get("Pen Style", QtCore.Qt.SolidLine))
+        item.setPen(pen)
+
+    # Helper method to set brush properties
+    def set_brush_properties(self, item, item_data):
+        brush = QtGui.QBrush()
+        brush.setColor(QtGui.QColor(item_data.get("Brush Color", "white")))
+        brush.setStyle(item_data.get("Brush Style", QtCore.Qt.SolidPattern))
+        item.setBrush(brush)
+
+    # Helper method to set text color
+    def set_text_color(self, item, item_data):
+        text_color = QtGui.QColor(item_data.get("Text Color", "black"))
+        item.setDefaultTextColor(text_color)
+        
 
     def file_save_image(self):
         # Get the file path to save the image
@@ -169,13 +222,80 @@ class Window(QtWidgets.QMainWindow):
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON", os.getcwd(), "JSON Files (*.json)")
 
         if file_path:
-            # Example JSON data to save
-            data = {"example_key": "example_value"}
+            data = []
 
-            # Write the JSON data to the file
+            # Iterate through each item in the scene
+            for item in self.scene.items():
+                item_data = {}
+
+                # Save position and dimensions based on the type of item
+                if isinstance(item, QtWidgets.QGraphicsRectItem):
+                    item_data["type"] = "Rectangle"
+                    item_data["x"] = item.rect().x()
+                    item_data["y"] = item.rect().y()
+                    item_data["width"] = item.rect().width()
+                    item_data["height"] = item.rect().height()
+                    pen = item.pen()
+                    item_data["Pen Color"] = pen.color().name()
+                    item_data["Pen Thickness"] = pen.width()
+                    item_data["Pen Style"] = pen.style()
+                    brush = item.brush()
+                    item_data["Brush Color"] = brush.color().name()
+                    item_data["Brush Style"] = brush.style()
+                    
+                elif isinstance(item, QtWidgets.QGraphicsLineItem):
+                    item_data["type"] = "Line"
+                    item_data["x1"] = item.line().x1()
+                    item_data["y1"] = item.line().y1()
+                    item_data["x2"] = item.line().x2()
+                    item_data["y2"] = item.line().y2()
+                    pen = item.pen()
+                    item_data["Pen Color"] = pen.color().name()
+                    item_data["Pen Thickness"] = pen.width()
+                    item_data["Pen Style"] = pen.style()
+                elif isinstance(item, QtWidgets.QGraphicsEllipseItem):
+                    item_data["type"] = "Ellipse"
+                    bounding_rect = item.boundingRect()
+                    item_data["x"] = bounding_rect.x()
+                    item_data["y"] = bounding_rect.y()
+                    item_data["width"] = bounding_rect.width()
+                    item_data["height"] = bounding_rect.height()
+                    pen = item.pen()
+                    item_data["Pen Color"] = pen.color().name()
+                    item_data["Pen Thickness"] = pen.width()
+                    item_data["Pen Style"] = pen.style()
+                    brush = item.brush()
+                    item_data["Brush Color"] = brush.color().name()
+                    item_data["Brush Style"] = brush.style()
+                elif isinstance(item, QtWidgets.QGraphicsPolygonItem):
+                    item_data["type"] = "Polygon"
+                    polygon = item.polygon()
+                    points = []
+                    for point in polygon:
+                        points.append({"x": point.x(), "y": point.y()})
+                    item_data["points"] = points
+                    pen = item.pen()
+                    item_data["Pen Color"] = pen.color().name()
+                    item_data["Pen Thickness"] = pen.width()
+                    item_data["Pen Style"] = pen.style()
+                    brush = item.brush()
+                    item_data["Brush Color"] = brush.color().name()
+                    item_data["Brush Style"] = brush.style()
+                elif isinstance(item, QtWidgets.QGraphicsTextItem):
+                    item_data["type"] = "Text"
+                    item_data["text"] = item.toPlainText()
+                    item_data["x"] = item.pos().x()
+                    item_data["y"] = item.pos().y()
+                    text_color = item.defaultTextColor()
+                    item_data["Text Color"] = text_color.name()
+
+                data.append(item_data)
+
+            # Write the data to the JSON file
             with open(file_path, 'w') as json_file:
-                json.dump(data, json_file)
+                json.dump(data, json_file, indent=4)
 
+                
     # Tools actions implementation
     def tools_selection(self,checked,tool) :
         print("MainWindow.action_set_tools()")
@@ -259,19 +379,26 @@ class Window(QtWidgets.QMainWindow):
 
     def help_shortcuts(self):
         QtWidgets.QMessageBox.information(self, "Shortcuts",
-                                "-->Shortcuts<--\n\n"
+                                "-->Shortcuts<--\n"
+                                "---------------------\n"
+                                "Ctrl+N: Create a new file\n"
                                 "Ctrl+O: Open file\n"
-                                "Ctrl+S: Save file\n"
+                                "Ctrl+S: Save JSON file\n"
+                                "Ctrl+I: Save image file\n"
+                                "Ctrl+Q: Quit\n"
                                 "Ctrl+Z: Undo\n"
                                 "Ctrl+Y: Redo\n"
-                                "Ctrl+C: Copy\n"
-                                "Ctrl+V: Paste\n"
-                                "Ctrl+X: Cut")
+                                "Ctrl+L: Draw a line\n"
+                                "Ctrl+R: Draw a rectangle\n"
+                                "Ctrl+E: Draw an ellipse\n"
+                                "Ctrl+P: Draw a polygone\n"
+                                "Ctrl+T: Write a text\n"
+                                "Ctrl+D: Eraser")
 
     # Menubar actions
     def create_menus(self) :
         menubar = self.menuBar()
-        menubar.setStyleSheet("background-color: #DCDCDC;")
+        menubar.setStyleSheet("background-color: #DCDCDC;font-size: 19px;")
         menu_file = menubar.addMenu('&File')
         menu_file.addAction(self.action_file_open)
         menu_file_saveAs=menu_file.addMenu('&Save As')

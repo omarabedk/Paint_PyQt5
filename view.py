@@ -159,7 +159,7 @@ class View (QtWidgets.QGraphicsView) :
                     text_item = QtWidgets.QGraphicsTextItem(text)
                     text_item.setPos(self.begin)
                     text_item.setDefaultTextColor(QtGui.QColor(self.pen.color()))
-                    self.add_item(text)
+                    self.add_item(text_item)
             elif self.tool == "eraser":
                 eraser_rect = QtCore.QRectF(self.end.x() - 5, self.end.y() - 5, 10, 10)
                 items = self.scene().items(eraser_rect)  # Find items intersecting with the eraser cursor
