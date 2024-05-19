@@ -7,17 +7,18 @@ from PyQt5.QtGui import QIcon
 from view import View
 
 class Window(QtWidgets.QMainWindow):
-    def __init__(self,position=(0,0),dimension=(500,300)):
+    def __init__(self, position=(0, 0), dimensions=(8000, 3000)):
         QtWidgets.QMainWindow.__init__(self)
         self.setWindowTitle("O&W Paint")
-        icon_path = "Icons/Paint_logo.png" 
+        icon_path = "Icons/Paint_logo.png"
         self.setWindowIcon(QtGui.QIcon(icon_path))
-        w,h=dimension
-        x,y=position
-        self.view=View()       
-        self.scene=QtWidgets.QGraphicsScene()  # Model
+        w, h = dimensions
+        x, y = position
+        self.view = View()
+        self.scene = QtWidgets.QGraphicsScene()  # Model
         self.view.setScene(self.scene)
         self.setCentralWidget(self.view)
+
 
         # Get the screen dimensions
         screen = QtWidgets.QDesktopWidget().screenGeometry()
@@ -87,7 +88,6 @@ class Window(QtWidgets.QMainWindow):
         # Style actions    
         self.action_style_pen=QtWidgets.QAction(QtGui.QIcon('Icons/tool_pen.png'),"Pen",self)
         self.action_style_brush=QtWidgets.QAction(QtGui.QIcon('Icons/tool_brush.png'),"Brush",self)
-        self.action_style_brush_logo=QtWidgets.QAction(QtGui.QIcon('Icons/tool_brush_style.png'),"Brush",self)
         self.action_style_pen_color=QtWidgets.QAction(QtGui.QIcon('Icons/colorize.png'),self.tr("&Pen Color"),self)
         self.action_style_pen_thickness=QtWidgets.QAction(QtGui.QIcon('Icons/tools_pen_thickness.png'),"Thickness",self)
         self.action_style_pen_solid=QtWidgets.QAction(QtGui.QIcon('Icons/tools_pen_solid.png'),"Solid Line",self)
@@ -303,7 +303,6 @@ class Window(QtWidgets.QMainWindow):
         menu_style_pen.addAction(self.action_style_pen_thickness)
         menu_style_brush.addAction(self.action_style_brush_color)
         menu_style_brush_style=menu_style_brush.addMenu('&Brush Style')
-        menu_style_brush_style.setIcon(self.action_style_brush_logo.icon())
         menu_style_brush_style.addAction(self.action_style_brush_no)
         menu_style_brush_style.addAction(self.action_style_brush_hor)
         menu_style_brush_style.addAction(self.action_style_brush_ver)
@@ -325,6 +324,15 @@ class Window(QtWidgets.QMainWindow):
         else :
             print("MainWindow need  a view !!!!! ")
         print("menubar size : ", self.menuBar().size())
+
+    def closeEvent(self, event):
+        reply = QtWidgets.QMessageBox.question(self, 'Confirmation', 'Are you sure you want to close the application?',
+                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 if __name__ == "__main__" :  
     print(QtCore.QT_VERSION_STR)
