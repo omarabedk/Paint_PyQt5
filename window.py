@@ -3,11 +3,12 @@ import sys
 import json
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QWidget, QToolTip
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QWidget, QToolTip, QFrame
 
 # from scene import Scene
 from view import View
 from SecondBar import SecondaryMenuBar
+from ToolsBar import ToolsBar
 
 class Window(QtWidgets.QMainWindow):
     def __init__(self, position=(0, 0), dimensions=(8000, 3000)):
@@ -32,18 +33,68 @@ class Window(QtWidgets.QMainWindow):
 
         self.create_actions()
         self.connect_actions()
+        
         self.create_menus()
+        
         self.create_secondary_menubar()
+        self.create_tools_bar()
+        
+        
 
     def create_secondary_menubar(self):
-        secondary_menubar = SecondaryMenuBar(self)
-        central_widget = QWidget(self)
-        layout = QVBoxLayout(central_widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.menuBar())
-        layout.addWidget(secondary_menubar)
-        layout.addWidget(self.view)
+        self.secondary_menubar = SecondaryMenuBar(self)
+
+    def create_tools_bar(self):
+        self.tools_bar = ToolsBar(self)
+
+        main_layout = QVBoxLayout()
+        top_layout = QVBoxLayout()
+        top_layout.addWidget(self.menuBar())
+        top_layout.addWidget(self.secondary_menubar)
+
+
+        central_layout = QHBoxLayout()
+        # Adding a longer line above the tool icons
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setStyleSheet("color: #FF6347;")  # Change color here
+        line.setFixedHeight(2)  # Make the line thicker
+        line.setFixedWidth(68)
+        top_layout.addWidget(line)
+
+        central_layout.addWidget(self.tools_bar)
+        central_layout.addWidget(self.view)
+
+        main_layout.addLayout(top_layout)
+        main_layout.addLayout(central_layout)
+
+        central_widget = QWidget()
+        central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
+
+    def get_view(self):
+        return self.view
+
+    def set_view(self, view):
+        self.view = view
+
+    def get_scene(self):
+        return self.scene
+
+    def set_scene(self, scene):
+        self.scene = scene
+
+
+
+
+
+
+
+
+
+
+
 
     def get_view(self):
         return self.view
