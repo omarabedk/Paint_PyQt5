@@ -88,5 +88,5 @@ class SecondaryMenuBar(QtWidgets.QWidget):
         layout.addWidget(redo_btn)
 
         layout.addStretch()  # Add stretch to align buttons to the left
-        
+        self.setFixedHeight(45)
         self.setLayout(layout)

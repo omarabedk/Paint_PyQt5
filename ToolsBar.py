@@ -71,7 +71,7 @@ class ToolsBar(QtWidgets.QWidget):
         pen_color_btn.setToolTip(self.tr("Pen Color"))
 
         brush_color_btn = QtWidgets.QPushButton()
-        brush_color_btn.setIcon(QIcon('Icons/colorize.png'))
+        brush_color_btn.setIcon(QIcon('Icons/brush_colorize.png'))
         brush_color_btn.setIconSize(QtCore.QSize(icon_size, icon_size))
         brush_color_btn.setStyleSheet(button_style)
         brush_color_btn.setToolTip(self.tr("Brush Color"))
@@ -81,6 +81,14 @@ class ToolsBar(QtWidgets.QWidget):
         pen_thickness_btn.setIconSize(QtCore.QSize(icon_size, icon_size))
         pen_thickness_btn.setStyleSheet(button_style)
         pen_thickness_btn.setToolTip(self.tr("Pen Thickness"))
+
+        # Adding a longer line above the tool icons
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setStyleSheet("background-color: #8D8D8D;")  # Change color here
+        line.setFixedHeight(2)  # Make the line thicker
+        line.setFixedWidth(40)
 
         # Pen styles
         pen_solid_btn = QtWidgets.QPushButton()
@@ -115,7 +123,7 @@ class ToolsBar(QtWidgets.QWidget):
 
         # Brush styles
         brush_solid_btn = QtWidgets.QPushButton()
-        brush_solid_btn.setIcon(QIcon('Icons/tool_rectangle.png'))
+        brush_solid_btn.setIcon(QIcon('Icons/brush_style_rectangle.png'))
         brush_solid_btn.setIconSize(QtCore.QSize(icon_size, icon_size))
         brush_solid_btn.setStyleSheet(button_style)
         brush_solid_btn.setToolTip(self.tr("Solid Brush"))
@@ -182,6 +190,7 @@ class ToolsBar(QtWidgets.QWidget):
         layout.addWidget(pen_color_btn)
         layout.addWidget(brush_color_btn)
         layout.addWidget(pen_thickness_btn)
+        layout.addWidget(line)
         layout.addWidget(pen_solid_btn)
         layout.addWidget(pen_dash_btn)
         layout.addWidget(pen_dot_btn)

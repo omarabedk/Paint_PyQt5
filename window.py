@@ -22,7 +22,7 @@ class Window(QtWidgets.QMainWindow):
         self.scene = QtWidgets.QGraphicsScene()  # Model
         self.view.setScene(self.scene)
         self.setCentralWidget(self.view)
-
+        
         # Get the screen dimensions
         screen = QtWidgets.QDesktopWidget().screenGeometry()
         screen_width, screen_height = screen.width(), screen.height()
@@ -33,11 +33,11 @@ class Window(QtWidgets.QMainWindow):
 
         self.create_actions()
         self.connect_actions()
-        
         self.create_menus()
         
         self.create_secondary_menubar()
         self.create_tools_bar()
+        
         
         
 
@@ -72,28 +72,6 @@ class Window(QtWidgets.QMainWindow):
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
-
-    def get_view(self):
-        return self.view
-
-    def set_view(self, view):
-        self.view = view
-
-    def get_scene(self):
-        return self.scene
-
-    def set_scene(self, scene):
-        self.scene = scene
-
-
-
-
-
-
-
-
-
-
 
 
     def get_view(self):
@@ -168,9 +146,9 @@ class Window(QtWidgets.QMainWindow):
         self.action_style_pen_dot = QtWidgets.QAction(QtGui.QIcon('Icons/tools_pen_dot.png'), "Dot Line", self)
         self.action_style_pen_dashdot = QtWidgets.QAction(QtGui.QIcon('Icons/tools_pen_dashdot.png'), "Dash Dot Line", self)
         self.action_style_pen_dashdotdot = QtWidgets.QAction(QtGui.QIcon('Icons/tools_pen_dashdotdot.png'), "Dash Dot Dot Line", self)
-        self.action_style_brush_color = QtWidgets.QAction(QtGui.QIcon('Icons/colorize.png'), self.tr("&Color"), self)
+        self.action_style_brush_color = QtWidgets.QAction(QtGui.QIcon('Icons/brush_colorize.png'), self.tr("&Brush Color"), self)
         self.action_style_brush_no = QtWidgets.QAction("No Brush", self)
-        self.action_style_brush_solid = QtWidgets.QAction(QtGui.QIcon('Icons/tool_rectangle.png'), "Solid Brush", self)
+        self.action_style_brush_solid = QtWidgets.QAction(QtGui.QIcon('Icons/brush_style_rectangle.png'), "Solid Brush", self)
         self.action_style_brush_hor = QtWidgets.QAction(QtGui.QIcon('Icons/tools_brush_hor.png'), "Horizontal", self)
         self.action_style_brush_ver = QtWidgets.QAction(QtGui.QIcon('Icons/tools_brush_ver.png'), "Vertical", self)
         self.action_style_brush_Bdiag = QtWidgets.QAction(QtGui.QIcon('Icons/tools_brush_BDiag.png'), "BDiag", self)
