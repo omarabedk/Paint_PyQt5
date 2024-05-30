@@ -213,6 +213,8 @@ class Window(QtWidgets.QMainWindow):
             self.file_save_json()
             self.scene.clear()
         else:
+            self.view.vertices.clear()
+            self.view.update_temp_polygon()
             self.scene.clear()
 
     # File actions implementation
