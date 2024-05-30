@@ -113,24 +113,22 @@ class Window(QtWidgets.QMainWindow):
         self.action_tools_text.setShortcut("Ctrl+T")
         self.action_tools_eraser = QtWidgets.QAction(QtGui.QIcon('Icons/tool_eraser.png'), "Eraser", self)
         self.action_tools_eraser.setShortcut("Ctrl+D")
+        self.action_tools_select = QtWidgets.QAction(QtGui.QIcon('Icons/tool_select.png'), "Select", self)
+        self.action_tools_select.setShortcut("Ctrl+A")
         self.action_tools_line.setCheckable(True)
-        self.action_tools_line.setChecked(True)
         self.action_tools_rect.setCheckable(True)
-        self.action_tools_rect.setChecked(True)
         self.action_tools_ellipse.setCheckable(True)
-        self.action_tools_ellipse.setChecked(True)
         self.action_tools_polygone.setCheckable(True)
-        self.action_tools_polygone.setChecked(True)
         self.action_tools_text.setCheckable(True)
-        self.action_tools_text.setChecked(True)
         self.action_tools_eraser.setCheckable(True)
-        self.action_tools_eraser.setChecked(True)
+        self.action_tools_select.setCheckable(True)
         self.action_tools.addAction(self.action_tools_line)
         self.action_tools.addAction(self.action_tools_rect)
         self.action_tools.addAction(self.action_tools_ellipse)
         self.action_tools.addAction(self.action_tools_polygone)
         self.action_tools.addAction(self.action_tools_text)
         self.action_tools.addAction(self.action_tools_eraser)
+        self.action_tools.addAction(self.action_tools_select)
         # Edit actions
         self.action_edit_undo = QtWidgets.QAction(QtGui.QIcon('Icons/edit_undo.png'), "Undo", self)
         self.action_edit_undo.setShortcut("Ctrl+Z")
@@ -178,6 +176,9 @@ class Window(QtWidgets.QMainWindow):
         )
         self.action_tools_eraser.triggered.connect(
             lambda checked, tool="eraser": self.tools_selection(checked, tool)
+        )
+        self.action_tools_select.triggered.connect(
+            lambda checked, tool="select": self.tools_selection(checked, tool)
         )
         self.action_file_new.triggered.connect(self.file_new)
         self.action_save_image.triggered.connect(self.file_save_image)
@@ -468,7 +469,8 @@ class Window(QtWidgets.QMainWindow):
                                           "Ctrl+E: Draw an ellipse\n"
                                           "Ctrl+P: Draw a polygon\n"
                                           "Ctrl+T: Write a text\n"
-                                          "Ctrl+D: Eraser")
+                                          "Ctrl+D: Eraser\n"
+                                          "Ctrl+A: Select")
 
     # Menubar actions
     def create_menus(self):
@@ -492,6 +494,7 @@ class Window(QtWidgets.QMainWindow):
         menu_tool.addAction(self.action_tools_polygone)
         menu_tool.addAction(self.action_tools_text)
         menu_tool.addAction(self.action_tools_eraser)
+        menu_tool.addAction(self.action_tools_select)
         menu_style = menubar.addMenu('&Style')
         menu_style_pen = menu_style.addMenu('&Pen')
         menu_style_pen.setIcon(self.action_style_pen.icon())

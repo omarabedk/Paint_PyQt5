@@ -9,7 +9,6 @@ class View(QtWidgets.QGraphicsView):
         self.setGeometry(x, y, w, h)
         self.thickness = 5
         self.begin, self.end = QtCore.QPoint(0, 0), QtCore.QPoint(0, 0)
-        self.offset = QtCore.QPoint(0, 0)
         self.tool = "line"
         self.item = None
         self.pen, self.brush = None, None
@@ -18,6 +17,10 @@ class View(QtWidgets.QGraphicsView):
         self.redo_stack = []
         self.vertices = []
         self.temp_polygon = None
+        self.rubber_band = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
+        self.selected_items = []
+        self.move_start_position = None
+        self.original_positions = []
 
     def __repr__(self):
         return "<View({},{},{})>".format(self.pen, self.brush, self.tool)
@@ -105,58 +108,59 @@ class View(QtWidgets.QGraphicsView):
 
     # Events
     def mousePressEvent(self, event):
-        print("View.mousePressEvent()")
-        print("event.pos() : ", event.pos())
-        print("event.screenPos() : ", event.screenPos())
         self.begin = self.end = event.pos()
+        self.move_start_position = event.pos()
+        
         if self.scene():
-            self.item = self.scene().itemAt(self.begin, QtGui.QTransform())
-            if self.item:
-                self.offset = self.begin - self.item.pos()
-            if self.tool == "polygon":
-                self.vertices.append(event.pos())
-                self.update_temp_polygon()
-    
+            item = self.scene().itemAt(self.mapToScene(event.pos()), QtGui.QTransform())
+            if self.tool == "select":
+                if item and item in self.selected_items:
+                    self.original_positions = [item.pos() for item in self.selected_items]
+                else:
+                    self.rubber_band.setGeometry(QtCore.QRect(self.begin, QtCore.QSize()))
+                    self.rubber_band.show()
+                    self.selected_items.clear()
+                    self.original_positions.clear()
+            else:
+                self.item = item
+                if self.item:
+                    self.offset = self.begin - self.item.pos()
+                if self.tool == "polygon":
+                    self.vertices.append(event.pos())
+                    self.update_temp_polygon()
+        else:
+            print("no scene associated!")
+
     def mouseMoveEvent(self, event):
         self.end = event.pos()
+
         if self.scene():
-            if self.item:
+            if self.tool == "select":
+                if self.rubber_band.isVisible():
+                    self.rubber_band.setGeometry(QtCore.QRect(self.begin, self.end).normalized())
+                elif self.selected_items:
+                    delta = event.pos() - self.move_start_position
+                    for i, item in enumerate(self.selected_items):
+                        item.setPos(self.original_positions[i] + delta)
+            elif self.item:
                 self.item.setPos(event.pos() - self.offset)
             else:
                 print("draw bounding box!")
         else:
             print("no scene associated!")
-    
-    def mouseDoubleClickEvent(self, event):
-        if self.tool == "polygon":
-            if len(self.vertices) > 2:  # Need at least 3 points to form a polygon
-                polygon = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(self.vertices))
-                polygon.setPen(self.pen)
-                polygon.setBrush(self.brush)
-                self.add_item(polygon)
-                self.vertices = []
-                self.remove_temp_polygon()
-
-    def update_temp_polygon(self):
-        if self.temp_polygon:
-            self.scene().removeItem(self.temp_polygon)
-        if len(self.vertices) > 1:
-            self.temp_polygon = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(self.vertices))
-            self.temp_polygon.setPen(self.pen)
-            self.temp_polygon.setBrush(self.brush)
-            self.scene().addItem(self.temp_polygon)
-
-    def remove_temp_polygon(self):
-        if self.temp_polygon:
-            self.scene().removeItem(self.temp_polygon)
-            self.temp_polygon = None
 
     def mouseReleaseEvent(self, event):
-        print("View.mouseReleaseEvent()")
-        print("nb items : ", len(self.items()))
-        self.end = event.pos()        
+        self.end = event.pos()
+
         if self.scene():
-            if self.item:
+            if self.tool == "select":
+                if self.rubber_band.isVisible():
+                    self.rubber_band.hide()
+                    selection_rect = QtCore.QRectF(self.mapToScene(self.begin), self.mapToScene(self.end)).normalized()
+                    self.selected_items = self.scene().items(selection_rect)
+                    self.original_positions = [item.pos() for item in self.selected_items]
+                    print("Selected items: ", self.selected_items)
+            elif self.item:
                 self.item.setPos(event.pos() - self.offset)
                 self.item = None
             elif self.tool == "line":
@@ -196,9 +200,32 @@ class View(QtWidgets.QGraphicsView):
                 for item in items:
                     if isinstance(item, QtWidgets.QGraphicsItem):  # Ensure it's a graphics item
                         self.scene().removeItem(item)  # Remove the item
-
             else:
                 print("nothing to draw!")
+
+    def mouseDoubleClickEvent(self, event):
+        if self.tool == "polygon":
+            if len(self.vertices) > 2:  # Need at least 3 points to form a polygon
+                polygon = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(self.vertices))
+                polygon.setPen(self.pen)
+                polygon.setBrush(self.brush)
+                self.add_item(polygon)
+                self.vertices = []
+                self.remove_temp_polygon()
+
+    def update_temp_polygon(self):
+        if self.temp_polygon:
+            self.scene().removeItem(self.temp_polygon)
+        if len(self.vertices) > 1:
+            self.temp_polygon = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(self.vertices))
+            self.temp_polygon.setPen(self.pen)
+            self.temp_polygon.setBrush(self.brush)
+            self.scene().addItem(self.temp_polygon)
+
+    def remove_temp_polygon(self):
+        if self.temp_polygon:
+            self.scene().removeItem(self.temp_polygon)
+            self.temp_polygon = None
 
     def resizeEvent(self, event):
         print("View.resizeEvent()")
